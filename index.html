@@ -1,0 +1,1388 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BondioList</title>
+<style>
+:root{--bg:#101114;--panel:#191b20;--panel2:#22252c;--border:#30333b;--text:#f0f1f5;--muted:#9b9eaa;--red:#e64b55;--gold:#f3c969;--green:#65d6a1}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Segoe UI,Arial,sans-serif}
+body.modal-open{overflow:hidden}
+button,input,select{font:inherit}
+header{background:#15161a;border-bottom:1px solid var(--border);padding:14px max(4%,calc((100% - 1200px)/2));display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;min-height:70px}
+.logo{font-weight:900;font-size:22px;letter-spacing:-.7px;display:flex;align-items:center}.logo span{color:var(--red)}
+.logo img{display:block;height:42px;width:auto;max-width:260px;object-fit:contain}
+#connection{font-size:12px;color:var(--muted)}
+#connection:empty{display:none}
+nav{display:flex;gap:8px;overflow-x:auto;padding:12px max(4%,calc((100% - 1200px)/2));background:#15161a;border-bottom:1px solid var(--border)}
+nav button{border:0;background:none;color:var(--muted);padding:10px 15px;border-radius:7px;white-space:nowrap}
+nav button.active,nav button:hover{background:var(--panel2);color:white}
+main{max-width:1200px;margin:auto;padding:26px 18px 60px}
+.hero{padding:26px;border:1px solid var(--border);border-radius:12px;background:linear-gradient(120deg,#24252d,#191a20);margin-bottom:20px}
+.hero h1{margin-top:0}
+.eyebrow{color:var(--red);font-size:11px;font-weight:900;letter-spacing:2px}
+h1{font-size:clamp(28px,5vw,42px);margin:10px 0}
+.muted{color:var(--muted)}p{line-height:1.6}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:22px}
+.stats.two{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:18px}
+.stat{background:var(--panel);border:1px solid var(--border);border-radius:9px;padding:15px}
+.stat strong{display:block;font-size:25px;margin-bottom:5px}.stat small{color:var(--muted)}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
+input,select{color:var(--text);background:var(--panel);border:1px solid var(--border);border-radius:7px;padding:12px}
+#search{flex:1;min-width:190px}
+.section-title{font-size:21px;margin:25px 0 12px}
+.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:10px}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;background:#1a1b20;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.7px}
+th,td{padding:13px 15px;border-bottom:1px solid var(--border)}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:#1d1f25}
+tr[data-player],tr[data-level]{cursor:pointer}
+tr[data-player]:focus-visible,tr[data-level]:focus-visible,.clickable:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+.clickable{cursor:pointer}
+.clickable:hover{color:#a8ceff;text-decoration:underline}
+.rank{font-weight:900;color:var(--muted);width:55px}
+.rank.first{color:var(--gold)}
+.level-cell{display:flex;align-items:center;gap:16px;min-width:340px}
+.thumbnail{width:160px;height:90px;object-fit:cover;border-radius:7px;background:#292b32;border:1px solid var(--border);flex-shrink:0;display:block}
+.thumbnail.sm{width:112px;height:63px;border-radius:6px}
+.thumbnail.md{width:128px;height:72px;border-radius:6px}
+.level-cell.md{gap:14px;min-width:300px}
+.thumbnail.xl{width:320px;max-width:100%;height:auto;aspect-ratio:16/9;border-radius:10px}
+.level-name{font-weight:800;font-size:16px}
+.name-line{display:flex;align-items:center;gap:8px}
+.sub{font-size:12px;color:var(--muted);margin-top:4px}
+.difficulty{display:inline-flex;align-items:center;gap:7px;padding:5px 10px 5px 7px;border-radius:5px;font-size:11px;font-weight:900;background:#30313a}
+.difficulty.no-icon{padding-left:10px}
+.diff-icon{width:24px;height:24px;object-fit:contain;flex-shrink:0}
+.Extreme{color:#ff777d;background:#45242a}.Insane{color:#d7a2ff;background:#362842}.Hard{color:#ffb779;background:#433025}.Medium{color:#ffe18b;background:#403a24}.Easy{color:#8fe4b5;background:#244033}
+.points{font-weight:800;color:var(--gold)}
+.notice{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:14px;color:var(--muted);font-size:13px;margin:14px 0}
+#levelStatus:empty{display:none}
+.error{color:#ff9090}.success{color:var(--green)}.hidden{display:none!important}
+a{color:#a8ceff;text-decoration:none}a:hover{text-decoration:underline}
+.player-name{font-weight:800;display:flex;align-items:center;gap:10px}
+.flag{width:24px;height:auto;border-radius:2px;flex-shrink:0;box-shadow:0 0 0 1px rgba(255,255,255,.12)}
+.flag-text{font-size:18px;line-height:1}
+.player-points{font-weight:900;color:var(--gold)}
+.progress-cell{display:flex;flex-direction:column;gap:6px;min-width:110px}
+.pct{font-weight:800}
+.bar{height:6px;border-radius:4px;background:#2d3039;overflow:hidden;width:100%;max-width:160px}
+.bar i{display:block;height:100%;background:var(--gold);border-radius:4px}
+footer{text-align:center;padding:24px;color:var(--muted);font-size:12px;border-top:1px solid var(--border)}
+
+/* ---------- Ventanas (jugador / nivel) ---------- */
+.modal{position:fixed;inset:0;z-index:100;background:rgba(5,6,8,.8);display:flex;align-items:flex-start;justify-content:center;padding:4vh 14px;overflow-y:auto}
+.modal-card{position:relative;width:100%;max-width:800px;background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:26px;box-shadow:0 20px 60px rgba(0,0,0,.55)}
+.modal-close{position:absolute;top:14px;right:14px;width:36px;height:36px;border-radius:50%;border:1px solid var(--border);background:var(--panel2);color:var(--text);font-size:18px;cursor:pointer;line-height:1}
+.modal-close:hover{background:var(--red);border-color:var(--red)}
+.modal-back{display:block;margin:0 0 14px;padding:6px 12px;border-radius:7px;border:1px solid var(--border);background:var(--panel2);color:var(--muted);font-size:13px;cursor:pointer}
+.modal-back:hover{color:white;border-color:#4a5060}
+.modal-title{font-size:26px;font-weight:900;padding-right:44px}
+.modal-title .flag{width:32px}
+.modal-sub{margin-top:6px;font-size:13px;color:var(--muted)}
+.hardest-wrap{margin-top:24px;padding:18px;border:1px solid var(--border);border-radius:12px;background:linear-gradient(120deg,#23252d,#1b1c22)}
+.hardest{display:flex;align-items:center;gap:22px;flex-wrap:wrap;margin-top:12px}
+.hardest-info{flex:1;min-width:200px}
+.hardest-name{font-size:28px;font-weight:900;line-height:1.15;margin-bottom:10px}
+.level-head{display:flex;align-items:center;gap:22px;flex-wrap:wrap;padding-right:40px}
+.top1-box{margin-top:22px;padding:16px 18px;border:1px solid #6b5a2c;border-radius:12px;background:linear-gradient(120deg,#2b2616,#1d1c17)}
+.top1-label{color:var(--gold);font-size:11px;font-weight:900;letter-spacing:2px}
+.top1-main{font-size:18px;font-weight:800;margin-top:6px}
+.top1-box .sub{font-size:13px;margin-top:6px}
+.group{margin-top:26px}
+.group-title{display:flex;align-items:baseline;justify-content:space-between;gap:10px;font-size:16px;font-weight:900;margin:0 0 10px}
+.group-title small{font-weight:600;color:var(--muted);font-size:12px}
+.progress-box{border:1px dashed #4a5060;border-radius:11px;background:#1d2026;padding:14px 14px 4px;margin-bottom:30px}
+.plist{border:1px solid var(--border);border-radius:11px;overflow:hidden}
+.progress-box .plist{border:0;border-radius:0}
+.plevel{display:flex;align-items:center;gap:14px;padding:10px 12px;border-bottom:1px solid var(--border)}
+.plevel:last-child{border-bottom:0}
+.prank{width:42px;font-weight:900;color:var(--muted);flex-shrink:0}
+.pinfo{flex:1;min-width:0}
+.pinfo .difficulty{margin-top:6px}
+.pside{text-align:right;flex-shrink:0}
+.pside.date{color:var(--muted);font-size:13px;font-weight:600}
+.pside .bar{margin-left:auto;width:110px}
+
+@media(max-width:600px){
+  main{padding:18px 10px 40px}.hero{padding:19px}.stats{gap:7px}.stat{padding:10px}.stat strong{font-size:20px}
+  th,td{padding:11px 9px}.thumbnail{width:112px;height:63px}.level-cell{gap:10px;min-width:250px}.level-name{font-size:14px}
+  .thumbnail.sm{width:84px;height:47px}.thumbnail.xl{width:100%}
+  .thumbnail.md{width:96px;height:54px}.level-cell.md{gap:10px;min-width:220px}
+  .logo img{height:36px;max-width:200px}
+  .modal{padding:2vh 8px}.modal-card{padding:18px 14px}.modal-title{font-size:21px}
+  .hardest-name{font-size:22px}.plevel{gap:9px;padding:9px 8px}.prank{width:34px;font-size:13px}
+  .level-head{padding-right:0}
+}
+
+/* ---------- BondioRoullete ---------- */
+.btn{border:1px solid var(--border);background:var(--panel2);color:var(--text);padding:12px 22px;border-radius:8px;font-weight:800;cursor:pointer}
+.btn:hover{border-color:#4a5060}
+.btn.primary{background:var(--red);border-color:var(--red);color:#fff}
+.btn.primary:hover{filter:brightness(1.1)}
+.btn.success{background:#1d5a40;border-color:var(--green);color:#fff}
+.btn.success:hover{filter:brightness(1.12)}
+.btn.big{font-size:18px;padding:15px 30px}
+.roul-bar{height:10px;max-width:none;margin:0 0 18px}
+.roul-card{border:1px solid var(--border);border-radius:14px;background:linear-gradient(120deg,#23252d,#1b1c22);padding:26px 20px;text-align:center}
+.roul-target{font-size:clamp(46px,11vw,76px);font-weight:900;color:var(--gold);line-height:1;margin-top:8px}
+.roul-level{display:flex;flex-direction:column;align-items:center;gap:12px;margin-top:20px}
+.roul-level .level-name{font-size:26px}
+.roul-card.spinning .roul-level .level-name{color:var(--muted)}
+.roul-card.spinning .thumbnail{opacity:.75}
+.roul-card.reveal{animation:roulPop .45s ease-out}
+@keyframes roulPop{from{transform:scale(.96);opacity:.4}to{transform:scale(1);opacity:1}}
+.roul-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:22px}
+.roul-foot{display:flex;justify-content:flex-end;margin-top:14px}
+.roul-hint{margin:10px auto 0;max-width:520px;font-size:13px}
+.roul-win .roul-target{color:var(--green)}
+@media(max-width:600px){.roul-level .level-name{font-size:21px}.btn.big{width:100%}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo" id="logo"></div>
+  <div id="connection"></div>
+</header>
+<nav>
+  <button class="active" data-page="levels">Ranking</button>
+  <button data-page="players">Jugadores</button>
+  <button data-page="records">Progresos</button>
+  <button data-page="roulette">BondioRoullete</button>
+</nav>
+
+<main>
+<section id="page-levels">
+  <div class="hero">
+    <h1>Bienvenido a la BondioList</h1>
+    <p class="muted">El ranking de los niveles más difíciles de Bondiolas.</p>
+    <div class="stats">
+      <div class="stat"><strong id="totalLevels">0</strong><small>Niveles registrados</small></div>
+      <div class="stat"><strong id="totalPlayers">0</strong><small>Jugadores</small></div>
+      <div class="stat"><strong id="topScore">—</strong><small>Puntos del nivel #1</small></div>
+    </div>
+  </div>
+  <div class="toolbar">
+    <input id="search" placeholder="Buscar nivel...">
+    <select id="difficultyFilter">
+      <option value="">Todas las dificultades</option>
+      <option value="0">Extreme Demon</option>
+      <option value="1">Insane Demon</option>
+      <option value="2">Hard Demon</option>
+      <option value="3">Medium Demon</option>
+      <option value="4">Easy Demon</option>
+    </select>
+  </div>
+  <div id="levelStatus" class="notice"></div>
+  <h2 class="section-title">Top 100</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>#</th><th>Nivel</th><th>Dificultad</th><th>Lista externa</th><th>Puntos</th></tr></thead>
+      <tbody id="levelsBody"><tr><td colspan="5">Cargando...</td></tr></tbody>
+    </table>
+  </div>
+</section>
+
+<section id="page-players" class="hidden">
+  <div class="hero">
+    <h1>Ranking de jugadores</h1>
+    <p class="muted">Los puntos se calculan sumando los niveles de la lista completados al 100 %. Hacé click en un jugador para ver su perfil.</p>
+    <div class="stats">
+      <div class="stat"><strong id="playerCount">0</strong><small>Jugadores</small></div>
+      <div class="stat"><strong id="playerLeader">—</strong><small>Líder actual</small></div>
+      <div class="stat"><strong id="playerLeaderPoints">0</strong><small>Puntos del líder</small></div>
+    </div>
+  </div>
+  <div class="toolbar"><input id="playerSearch" placeholder="Buscar jugador..."></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Pos.</th><th>Jugador</th><th>Niveles pasados</th><th>Puntos</th></tr></thead>
+      <tbody id="playersBody"><tr><td colspan="4">Cargando...</td></tr></tbody>
+    </table>
+  </div>
+</section>
+
+<section id="page-records" class="hidden">
+  <div class="hero">
+    <h1>Progresos y récords</h1>
+    <p class="muted">Registros de los jugadores</p>
+  </div>
+  <div class="toolbar"><input id="recordSearch" placeholder="Buscar jugador o nivel..."></div>
+
+  <h2 class="section-title">Niveles en progreso</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Jugador</th><th>Nivel</th><th>Progreso</th></tr></thead>
+      <tbody id="progressBody"><tr><td colspan="3">Cargando...</td></tr></tbody>
+    </table>
+  </div>
+
+  <h2 class="section-title">Registros</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Jugador</th><th>Nivel</th><th>Fecha</th><th>Progreso</th><th>Estado</th></tr></thead>
+      <tbody id="recordsBody"><tr><td colspan="5">Cargando...</td></tr></tbody>
+    </table>
+  </div>
+</section>
+<section id="page-roulette" class="hidden">
+  <div class="hero">
+    <h1>BondioRoullete</h1>
+    <p class="muted">Tirá la ruleta y te toca un nivel random de la BondioList: tenés que pasar el porcentaje que corresponda (1 %, 2 %, 3 %...) en ese nivel. Si lo lográs, tirás de nuevo para el siguiente porcentaje, sin repetir niveles, hasta llegar al 100 %. Tu progreso se guarda en este navegador.</p>
+    <div class="stats">
+      <div class="stat"><strong id="roulPct">0%</strong><small>Porcentaje alcanzado</small></div>
+      <div class="stat"><strong id="roulNext">1%</strong><small>Próximo objetivo</small></div>
+      <div class="stat"><strong id="roulLeft">0</strong><small>Niveles disponibles</small></div>
+    </div>
+  </div>
+  <div id="roulettePanel"></div>
+</section>
+</main>
+<footer>BondioList · By PYTELstudios</footer>
+
+<div id="playerModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Detalle">
+  <div class="modal-card" id="modalCard"></div>
+</div>
+
+<script>
+"use strict";
+
+const SPREADSHEET_ID="1_6XwVgEkLF5Pqec_xWIinJwisYVKgi1xxIzkcFG52DE";
+const SHEETS={levels:"Niveles",players:"Jugadores",records:"Progresos",config:"Config"};
+
+let levels=[],players=[],records=[],config={};
+/* Estado de la carga de listas externas por dificultad: "loading" | "ok" | "error" */
+const externalState={};
+
+const DIFF={
+  "extremedemon":0,"extreme":0,
+  "insanedemon":1,"insane":1,
+  "harddemon":2,"hard":2,
+  "mediumdemon":3,"medium":3,
+  "easydemon":4,"easy":4
+};
+const DIFF_NAMES=["Extreme Demon","Insane Demon","Hard Demon","Medium Demon","Easy Demon"];
+/* Iconos personalizados por dificultad */
+const DIFF_ICONS=[
+  "https://static.wikia.nocookie.net/geometry-dash-fan/images/9/97/ExtremeDemon.png/revision/latest/scale-to-width-down/24?cb=20260924151441",
+  "https://static.wikia.nocookie.net/geometry-dash-fan/images/1/11/InsaneDemon.png/revision/latest/scale-to-width-down/24?cb=20250308220828",
+  "https://static.wikia.nocookie.net/geometry-dash-fan/images/c/c4/Demon.png/revision/latest/scale-to-width-down/24?cb=20260924151332",
+  "https://static.wikia.nocookie.net/geometry-dash-fan/images/e/e2/MediumDemon.png/revision/latest/scale-to-width-down/24?cb=20250308221138",
+  "https://static.wikia.nocookie.net/geometry-dash-fan/images/2/24/EasyDemon.png/revision/latest/scale-to-width-down/24?cb=20250308220446"
+];
+const $=id=>document.getElementById(id);
+
+/* Nombres de países -> código ISO (por si la hoja tiene texto en vez de emoji) */
+const COUNTRY_CODES={
+  argentina:"ar",paraguay:"py",uruguay:"uy",chile:"cl",bolivia:"bo",peru:"pe",brasil:"br",brazil:"br",
+  colombia:"co",venezuela:"ve",ecuador:"ec",mexico:"mx",espana:"es",spain:"es",
+  estadosunidos:"us",eeuu:"us",usa:"us",unitedstates:"us",canada:"ca",
+  costarica:"cr",panama:"pa",guatemala:"gt",honduras:"hn",elsalvador:"sv",nicaragua:"ni",
+  cuba:"cu",republicadominicana:"do",puertorico:"pr",
+  francia:"fr",france:"fr",alemania:"de",germany:"de",italia:"it",italy:"it",
+  portugal:"pt",reinounido:"gb",unitedkingdom:"gb",uk:"gb",inglaterra:"gb",
+  rusia:"ru",russia:"ru",polonia:"pl",poland:"pl",paisesbajos:"nl",holanda:"nl",netherlands:"nl",
+  japon:"jp",japan:"jp",china:"cn",corea:"kr",filipinas:"ph",philippines:"ph",
+  australia:"au",turquia:"tr",turkey:"tr",suecia:"se",sweden:"se",noruega:"no",norway:"no"
+};
+
+function norm(v){
+  return String(v??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+    .toLowerCase().trim().replace(/[\s_-]+/g,"");
+}
+function clean(v){return String(v??"").trim()}
+function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function field(obj,names){
+  for(const name of names){
+    const key=Object.keys(obj).find(k=>norm(k)===norm(name));
+    if(key!==undefined&&obj[key]!==""&&obj[key]!=null)return obj[key];
+  }
+  return "";
+}
+function difficultyOrder(v){return DIFF[norm(v)]??99}
+function diffName(v){return DIFF_NAMES[difficultyOrder(v)]||clean(v)||"Sin dificultad"}
+function listForDifficulty(v){
+  return ["AREDL","Insane Demon List","Hard Demon List","Medium Demon List","Easy Demon List"][difficultyOrder(v)]||"Sin lista asignada";
+}
+
+/* ---------- Fechas ---------- */
+function pad2(n){return String(n).padStart(2,"0")}
+function validYMD(y,m,d){
+  const dt=new Date(y,m-1,d);
+  return dt.getFullYear()===y&&dt.getMonth()===m-1&&dt.getDate()===d;
+}
+/* Devuelve un timestamp (medianoche local) o null. Acepta 2026-10-25, 25/10/2026, 25-10-26, etc.
+   En formatos con barras se asume día/mes/año. */
+function parseDate(v){
+  const s=clean(v);
+  if(!s)return null;
+  let m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if(m){
+    const y=+m[1],mo=+m[2],d=+m[3];
+    return validYMD(y,mo,d)?new Date(y,mo-1,d).getTime():null;
+  }
+  m=s.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2,4})/);
+  if(m){
+    let day=+m[1],mon=+m[2],y=+m[3];
+    if(y<100)y+=2000;
+    if(mon>12&&day<=12){const t=day;day=mon;mon=t}
+    return validYMD(y,mon,day)?new Date(y,mon-1,day).getTime():null;
+  }
+  const t=Date.parse(s);
+  if(!isNaN(t)){const d=new Date(t);return new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime()}
+  return null;
+}
+function fmtDate(ts){
+  return new Date(ts).toLocaleDateString("es-AR",{day:"2-digit",month:"2-digit",year:"numeric"});
+}
+function startOfToday(){
+  const d=new Date();
+  return new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime();
+}
+function fmtDuration(ms){
+  const days=Math.round(ms/86400000);
+  if(days<=0)return "menos de 1 día";
+  let text=days+(days===1?" día":" días");
+  if(days>=60)text+=" (≈ "+Math.round(days/30.44)+" meses)";
+  return text;
+}
+
+/* ---------- Config (hoja "Config": columnas clave / valor) ---------- */
+function parseConfig(rows){
+  const cfg={};
+  rows.forEach(r=>{
+    const vals=Object.values(r);
+    const key=field(r,["clave","key"])||vals[0];
+    const value=field(r,["valor","value"])||vals[1];
+    const k=norm(key);
+    if(k&&clean(value)!=="")cfg[k]=clean(value);
+  });
+  return cfg;
+}
+function cfg(key){return config[norm(key)]||""}
+const LOGO_FALLBACK='DEMON<span>LIST</span>';
+function applyConfig(){
+  const logoUrl=cfg("logo_url");
+  $("logo").innerHTML=/^https?:\/\//i.test(logoUrl)
+    ?`<img src="${esc(logoUrl)}" alt="Community Demon List" onerror="this.outerHTML='${LOGO_FALLBACK}'">`
+    :LOGO_FALLBACK;
+
+  const iconUrl=cfg("favicon_url");
+  if(/^https?:\/\//i.test(iconUrl)){
+    let link=document.querySelector('link[rel~="icon"]');
+    if(!link){link=document.createElement("link");link.rel="icon";document.head.appendChild(link)}
+    link.removeAttribute("type");
+    link.href=iconUrl;
+  }
+}
+
+/* ---------- Banderas ---------- */
+function flagCode(v){
+  const s=clean(v);
+  if(!s)return "";
+  const cps=[...s].map(c=>c.codePointAt(0)).filter(c=>c>=0x1F1E6&&c<=0x1F1FF);
+  if(cps.length>=2)return String.fromCharCode(97+cps[0]-0x1F1E6,97+cps[1]-0x1F1E6);
+  if(/^[a-z]{2}$/i.test(s))return s.toLowerCase();
+  return COUNTRY_CODES[norm(s)]||"";
+}
+function flagEmoji(code){
+  return code?String.fromCodePoint(...[...code.toUpperCase()].map(c=>0x1F1E6+c.charCodeAt(0)-65)):"";
+}
+/* Usa imagen de bandera (se ve igual en Windows, Mac y celular); si falla, cae al emoji */
+function flagHtml(country){
+  const code=flagCode(country);
+  if(!code){
+    const raw=clean(country);
+    return raw?`<span class="flag-text">${esc(raw)}</span>`:"";
+  }
+  const emoji=flagEmoji(code);
+  return `<img class="flag" src="https://flagcdn.com/w40/${code}.png" alt="${esc(emoji)}" title="${esc(clean(country))}" loading="lazy" onerror="this.outerHTML='<span class=&quot;flag-text&quot;>${emoji}</span>'">`;
+}
+
+/* ---------- Puestos externos (se calculan solos desde cada lista externa) ----------
+   Ya no hay que cargar el puesto en la hoja: se busca el nivel en su lista según la dificultad.
+   index 0 AREDL | 1 Insane Demon List | 2 Hard Demon List | 3 Medium Demon List | 4 Easy Demon List
+   type "aredl"        -> API de la AREDL (array con position / level_id / name)
+   type "pointercrate" -> API tipo Pointercrate (/api/v2/demons/listed)
+   type "static"       -> sitios con /data/_list.json (orden de la lista) + /data/<archivo>.json por nivel
+   Se prueba cada URL de "urls" en orden hasta que una funcione. */
+const EXTERNAL_LISTS=[
+  {name:"AREDL",type:"aredl",urls:["https://api.aredl.net/v2/api/aredl/levels"]},
+  {name:"Insane Demon List",type:"pointercrate",urls:["https://insanedemonlist.com"]},
+  {name:"Hard Demon List",type:"static",urls:["https://harddemonlist.pages.dev","https://hdl.pages.dev"]},
+  {name:"Medium Demon List",type:"static",urls:["https://mediumdemonslist.pages.dev"]},
+  {name:"Easy Demon List",type:"static",urls:["https://easydemonlist.pages.dev"]}
+];
+
+async function fetchJson(url,ms){
+  const ctrl=new AbortController();
+  const t=setTimeout(()=>ctrl.abort(),ms||15000);
+  try{
+    const res=await fetch(url,{signal:ctrl.signal,headers:{Accept:"application/json"}});
+    if(!res.ok)throw new Error("HTTP "+res.status);
+    return await res.json();
+  }finally{clearTimeout(t)}
+}
+/* Devuelve [{pos, id, name}] ordenado por puesto */
+function entriesFromArray(arr){
+  const out=[];
+  (Array.isArray(arr)?arr:[]).forEach((x,i)=>{
+    if(!x||typeof x!=="object")return;
+    const pos=Number(x.position??x.placement??x.rank??(i+1));
+    const id=clean(x.level_id??x.levelId??x.id_gd??x.gd_id??"");
+    const name=clean(x.name??x.level??"");
+    if(pos>0&&(name||id))out.push({pos,id,name});
+  });
+  return out;
+}
+async function loadAredlLike(base){
+  return entriesFromArray(await fetchJson(base));
+}
+async function loadPointercrate(base){
+  const out=[];
+  let after=0;
+  for(let page=0;page<4;page++){
+    const rows=await fetchJson(base+"/api/v2/demons/listed/?limit=100"+(after?"&after="+after:""));
+    if(!Array.isArray(rows)||!rows.length)break;
+    const part=entriesFromArray(rows);
+    out.push(...part);
+    after=Math.max(...rows.map(r=>Number(r.position)||0));
+    if(rows.length<100||!after)break;
+  }
+  if(!out.length)throw new Error("Lista vacía");
+  return out;
+}
+/* Sitios estáticos: _list.json trae los archivos en orden de puesto */
+function slugName(file){
+  return clean(String(file).split("/").pop().replace(/\.json$/i,"").replace(/[_]+/g," "));
+}
+async function loadStatic(base){
+  const list=await fetchJson(base+"/data/_list.json");
+  const files=(Array.isArray(list)?list:[]).map(f=>typeof f==="string"?f:(f&&(f.path||f.file||f.name))||"");
+  const out=[];
+  files.forEach((f,i)=>{
+    if(!f)return;
+    const slug=slugName(f);
+    if(slug)out.push({pos:i+1,id:"",name:slug,file:String(f).replace(/\.json$/i,"").replace(/^\/?(data\/)?/,"")});
+  });
+  if(!out.length)throw new Error("Lista vacía");
+  out.base=base;
+  return out;
+}
+/* Si algún nivel no se encontró por nombre, completa los datos reales (id y nombre) de cada archivo */
+async function enrichStatic(entries){
+  if(!entries.base)return;
+  const todo=entries.filter(e=>e.file&&!e.loaded);
+  for(let i=0;i<todo.length;i+=10){
+    await Promise.all(todo.slice(i,i+10).map(async e=>{
+      try{
+        const d=await fetchJson(entries.base+"/data/"+encodeURIComponent(e.file)+".json",12000);
+        if(d){e.id=clean(d.id??d.level_id??"");if(d.name)e.name=clean(d.name)}
+      }catch(_){}
+      e.loaded=true;
+    }));
+  }
+}
+function matchEntry(level,entries){
+  const id=clean(level.id),nm=norm(level.name);
+  return (id&&entries.find(e=>e.id&&e.id===id))||entries.find(e=>norm(e.name)===nm)||null;
+}
+async function loadExternalList(cfgList){
+  let lastErr=null;
+  for(const base of cfgList.urls){
+    try{
+      if(cfgList.type==="aredl")return await loadAredlLike(base);
+      if(cfgList.type==="pointercrate")return await loadPointercrate(base);
+      return await loadStatic(base);
+    }catch(e){lastErr=e}
+  }
+  throw lastErr||new Error("Sin respuesta");
+}
+const EXT_CACHE_KEY="bondiolist_ext_v1";
+function readExtCache(){try{return JSON.parse(localStorage.getItem(EXT_CACHE_KEY)||"{}")}catch(_){return {}}}
+function saveExtCache(c){try{localStorage.setItem(EXT_CACHE_KEY,JSON.stringify(c))}catch(_){}}
+
+async function loadExternalRanks(){
+  const orders=[...new Set(levels.map(l=>difficultyOrder(l.difficulty)).filter(o=>o<EXTERNAL_LISTS.length))];
+  orders.forEach(o=>{externalState[o]="loading"});
+  renderLevels();
+  const cache=readExtCache();
+  await Promise.all(orders.map(async o=>{
+    const group=levels.filter(l=>difficultyOrder(l.difficulty)===o);
+    try{
+      let entries=await loadExternalList(EXTERNAL_LISTS[o]);
+      let missing=group.filter(l=>!matchEntry(l,entries));
+      if(missing.length&&entries.base){await enrichStatic(entries);missing=group.filter(l=>!matchEntry(l,entries))}
+      group.forEach(l=>{const e=matchEntry(l,entries);l.externalRank=e?e.pos:null});
+      externalState[o]="ok";
+      cache[o]=group.map(l=>[norm(l.name),l.externalRank]);
+    }catch(err){
+      /* Si la lista no responde, se usa el último resultado guardado en este navegador */
+      const saved=new Map(cache[o]||[]);
+      group.forEach(l=>{const v=saved.get(norm(l.name));l.externalRank=v==null?null:v});
+      externalState[o]=saved.size?"ok":"error";
+    }
+    renderLevels();
+    if(!roulSpinning)renderRoulette();
+  }));
+  saveExtCache(cache);
+}
+
+/* ---------- Google Sheets ---------- */
+function loadGvizSheet(spreadsheetId,sheetName){
+  return new Promise((resolve,reject)=>{
+    const cb="__gviz_"+Math.random().toString(36).slice(2);
+    const script=document.createElement("script");
+    let done=false;
+    const timeout=setTimeout(()=>finish(new Error("Tiempo de espera leyendo "+sheetName)),18000);
+    function cleanup(){
+      clearTimeout(timeout);script.remove();script.onerror=null;
+      try{delete window[cb]}catch(_){window[cb]=undefined}
+    }
+    function finish(err,data){
+      if(done)return;done=true;cleanup();err?reject(err):resolve(data);
+    }
+    window[cb]=payload=>{
+      if(!payload||payload.status==="error"){
+        const detail=(payload?.errors||[]).map(e=>e.detailed_message||e.message).filter(Boolean).join("; ");
+        finish(new Error(detail||"Google devolvió un error en "+sheetName));return;
+      }
+      finish(null,payload);
+    };
+    script.onerror=()=>finish(new Error("No se pudo cargar "+sheetName));
+    const params=new URLSearchParams({
+      tqx:"out:json;responseHandler:"+cb,headers:"1",sheet:sheetName,_:String(Date.now())
+    });
+    script.src="https://docs.google.com/spreadsheets/d/"+encodeURIComponent(spreadsheetId)+"/gviz/tq?"+params;
+    document.head.appendChild(script);
+  });
+}
+/* Las celdas de fecha llegan como "Date(2026,9,25)" (mes desde 0): se pasan a AAAA-MM-DD */
+function cellValue(c){
+  const v=c.v;
+  if(v instanceof Date)return v.getFullYear()+"-"+pad2(v.getMonth()+1)+"-"+pad2(v.getDate());
+  if(typeof v==="string"){
+    const m=v.match(/^Date\((\d+),\s*(\d+),\s*(\d+)/);
+    if(m)return m[1]+"-"+pad2(+m[2]+1)+"-"+pad2(+m[3]);
+  }
+  return c.f??c.v??"";
+}
+function gvizRows(payload,sheet){
+  const t=payload?.table;
+  if(!t||!Array.isArray(t.cols)||!Array.isArray(t.rows))throw new Error("Respuesta no válida en "+sheet);
+  const headers=t.cols.map((c,i)=>clean(c.label||c.id||"columna"+i));
+  return t.rows.map(row=>{
+    const obj={};
+    headers.forEach((h,i)=>{const c=row.c?.[i];obj[h]=c?cellValue(c):""});
+    return obj;
+  }).filter(obj=>Object.values(obj).some(v=>clean(v)!==""));
+}
+async function readSheet(name){
+  return gvizRows(await loadGvizSheet(SPREADSHEET_ID,name),name);
+}
+
+function normalizeLevel(r){
+  const name=clean(field(r,["nombre","name","level","nivel"]));
+  if(!name)return null;
+  const difficulty=clean(field(r,["dificultad","difficulty"]))||"Extreme Demon";
+  return {
+    id:clean(field(r,["id_gd","id","level_id"])),
+    name,
+    difficulty,
+    list:clean(field(r,["lista","list","external_list"]))||listForDifficulty(difficulty),
+    url:clean(field(r,["url","link","enlace"])),
+    thumbnail:clean(field(r,["miniatura","thumbnail","image","imagen"])),
+    externalRank:null
+  };
+}
+function normalizePlayer(r){
+  return {
+    name:clean(field(r,["nombre","jugador","player","username","usuario","discord"])),
+    country:clean(field(r,["pais","país","country"]))
+  };
+}
+/* En la hoja Progresos, la celda de nivel puede ser "Nombre" o "Nombre, Dificultad"
+   (ej. "Bloodbath, Extreme Demon"). Lo que va después de la última coma se usa como
+   dificultad solo si es una dificultad válida; si no, es parte del nombre. */
+function splitLevelField(raw){
+  const s=clean(raw);
+  const i=s.lastIndexOf(",");
+  if(i>0){
+    const tail=clean(s.slice(i+1));
+    if(difficultyOrder(tail)!==99)return {name:clean(s.slice(0,i)),difficulty:tail};
+  }
+  return {name:s,difficulty:""};
+}
+function normalizeRecord(r){
+  const lv=splitLevelField(field(r,["nivel","level","nombre_nivel","nombre"]));
+  const date=clean(field(r,["fecha","date"]));
+  return {
+    player:clean(field(r,["jugador","player","usuario","username","nombre_jugador"])),
+    level:lv.name,
+    levelDiff:lv.difficulty,
+    progress:clean(field(r,["progreso","progress","porcentaje","percent"])),
+    type:clean(field(r,["tipo","type","record","récord"]))||"Progreso",
+    date,
+    ts:parseDate(date),
+    thumbnail:clean(field(r,["miniatura","thumbnail","image","imagen"]))
+  };
+}
+function dateText(r){
+  return r.ts!=null?fmtDate(r.ts):(r.date||"—");
+}
+function progressNumber(v){
+  const match=String(v??"").match(/\d+(?:[.,]\d+)?/);
+  return match?Number(match[0].replace(",",".")):0;
+}
+function progressPct(r){return Math.max(0,Math.min(100,progressNumber(r.progress)))}
+function isCompleted(r){
+  const p=progressNumber(r.progress);
+  const type=norm(r.type);
+  return p>=100||["completado","completed","pasado","beaten","verified"].includes(type);
+}
+function levelScore(level,position){
+  if(position<1||position>100)return 0;
+  return Math.round(350*Math.pow(1/350,(position-1)/99)*100)/100;
+}
+function sortedLevels(){
+  return [...levels].sort((a,b)=>{
+    const d=difficultyOrder(a.difficulty)-difficultyOrder(b.difficulty);
+    if(d)return d;
+    const ar=a.externalRank??Infinity,br=b.externalRank??Infinity;
+    if(ar!==br)return ar-br;
+    return a.name.localeCompare(b.name);
+  }).slice(0,100);
+}
+function linkForLevel(level){
+  if(level.url&&/^https?:\/\//i.test(level.url))return level.url;
+  if(level.id&&/^\d+$/.test(level.id))
+    return "https://www.google.com/search?q="+encodeURIComponent("Geometry Dash "+level.name+" "+level.id);
+  return "https://www.google.com/search?q="+encodeURIComponent("Geometry Dash "+level.name);
+}
+function safeImage(url){
+  return /^https?:\/\//i.test(url)?url:"";
+}
+function thumbHtml(level,size){
+  const img=level?safeImage(level.thumbnail):"";
+  const cls="thumbnail"+(size?" "+size:"");
+  return img
+    ?`<img class="${cls}" src="${esc(img)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">`
+    :`<div class="${cls}"></div>`;
+}
+
+/* Miniaturas de niveles que no están en la lista: salen de la columna "miniatura" de la hoja Progresos */
+let _tm=null,_tmSrc=null;
+function recordThumbMap(){
+  if(_tmSrc!==records){
+    _tm=new Map();
+    records.forEach(r=>{
+      const u=safeImage(r.thumbnail),k=norm(r.level);
+      if(u&&k&&!_tm.has(k))_tm.set(k,u);
+    });
+    _tmSrc=records;
+  }
+  return _tm;
+}
+/* Devuelve un objeto con .thumbnail: el del ranking si tiene; si no, el de la hoja Progresos */
+function thumbSource(info,name){
+  if(info&&safeImage(info.level.thumbnail))return info.level;
+  const u=recordThumbMap().get(norm(name));
+  if(u)return {thumbnail:u};
+  return info?info.level:{thumbnail:""};
+}
+
+/* nombre normalizado de nivel -> {level, rank, points} (solo Top 100) */
+function levelIndex(){
+  const map=new Map();
+  sortedLevels().forEach((l,i)=>map.set(norm(l.name),{level:l,rank:i+1,points:levelScore(l,i+1)}));
+  return map;
+}
+/* Dificultad de un registro: primero la del ranking; si el nivel no está, la escrita en la hoja Progresos */
+function recordDifficulty(r,info){
+  return info?info.level.difficulty:(r.levelDiff||"");
+}
+/* Orden "como en el ranking": rank más bajo (más difícil) primero; los que no están en la lista, al final */
+function byRank(a,b){
+  const ar=a.info?a.info.rank:99999,br=b.info?b.info.rank:99999;
+  if(ar!==br)return ar-br;
+  return a.name.localeCompare(b.name);
+}
+
+/* Niveles completados y en progreso de un jugador (un nivel cuenta una sola vez) */
+function playerEntries(playerName){
+  const idx=levelIndex();
+  const doneMap=new Map(),progMap=new Map();
+  records.forEach(r=>{
+    if(norm(r.player)!==norm(playerName)||!norm(r.level))return;
+    const key=norm(r.level);
+    if(isCompleted(r)){if(!doneMap.has(key))doneMap.set(key,r)}
+    else{
+      const cur=progMap.get(key);
+      if(!cur||progressNumber(r.progress)>progressNumber(cur.progress))progMap.set(key,r);
+    }
+  });
+  const build=(map,onlyListed)=>[...map.entries()]
+    .filter(([key])=>!onlyListed||idx.has(key))
+    .map(([key,r])=>({record:r,info:idx.get(key)||null,name:idx.get(key)?.level.name||r.level}))
+    .sort(byRank);
+  const done=build(doneMap,true);
+  const prog=[...progMap.entries()].filter(([key])=>!doneMap.has(key))
+    .map(([key,r])=>({record:r,info:idx.get(key)||null,name:idx.get(key)?.level.name||r.level}))
+    .sort(byRank);
+  return {done,prog};
+}
+
+/* Un nivel cuenta una sola vez por jugador, aunque haya varias filas de progreso. */
+function calculatePlayerScores(){
+  const top=sortedLevels();
+  const rankByName=new Map(top.map((l,i)=>[norm(l.name),i+1]));
+  const pointsByName=new Map(top.map((l,i)=>[norm(l.name),levelScore(l,i+1)]));
+  return players.map(p=>{
+    const completedNames=new Set();
+    records.forEach(r=>{
+      if(norm(r.player)!==norm(p.name)||!isCompleted(r))return;
+      const key=norm(r.level);
+      if(rankByName.has(key))completedNames.add(key);
+    });
+    let points=0;
+    completedNames.forEach(name=>{points+=pointsByName.get(name)||0});
+    return {...p,completed:completedNames.size,points:Math.round(points*100)/100};
+  }).sort((a,b)=>b.points-a.points||a.name.localeCompare(b.name));
+}
+
+/* ---------- Historial del Top 1 ----------
+   Se reconstruye con las fechas de completado: un nivel pasa a ser Top 1 el día que alguien lo
+   completa por primera vez (si es más difícil que el Top 1 de ese momento) y deja de serlo el día
+   que se completa por primera vez un nivel más difícil. */
+function computeReigns(){
+  const idx=levelIndex();
+  const first=new Map();
+  records.forEach(r=>{
+    if(!isCompleted(r)||r.ts==null)return;
+    const key=norm(r.level);
+    if(!idx.has(key))return;
+    const cur=first.get(key);
+    if(cur==null||r.ts<cur)first.set(key,r.ts);
+  });
+  const events=[...first.entries()]
+    .map(([key,ts])=>({key,ts,rank:idx.get(key).rank}))
+    .sort((a,b)=>a.ts-b.ts||a.rank-b.rank);
+  const reigns=new Map();
+  let champ=null;
+  events.forEach(ev=>{
+    if(!champ||ev.rank<champ.rank){
+      if(champ){
+        champ.end=ev.ts;
+        if(champ.end<=champ.start)reigns.delete(champ.key);
+      }
+      champ={key:ev.key,rank:ev.rank,start:ev.ts,end:null};
+      reigns.set(ev.key,champ);
+    }
+  });
+  return reigns;
+}
+
+/* ---------- Piezas de HTML reutilizables ---------- */
+function difficultyBadge(difficulty){
+  const order=difficultyOrder(difficulty);
+  const icon=DIFF_ICONS[order]||"";
+  const cls=["Extreme","Insane","Hard","Medium","Easy"][order]||"";
+  const img=icon?`<img class="diff-icon" src="${esc(icon)}" alt="" loading="lazy" onerror="this.style.display='none'">`:"";
+  return `<span class="difficulty ${cls}${icon?"":" no-icon"}">${img}${esc(diffName(difficulty))}</span>`;
+}
+/* Solo el icono de la dificultad (para ponerlo al lado del nombre de un nivel) */
+function diffIconHtml(difficulty){
+  const icon=DIFF_ICONS[difficultyOrder(difficulty)]||"";
+  if(!icon)return "";
+  const label=diffName(difficulty);
+  return `<img class="diff-icon" src="${esc(icon)}" alt="${esc(label)}" title="${esc(label)}" loading="lazy" onerror="this.style.display='none'">`;
+}
+function progressCell(r){
+  return `<div class="progress-cell"><span class="pct">${esc(r.progress||"—")}</span><div class="bar"><i style="width:${progressPct(r)}%"></i></div></div>`;
+}
+let _pm=null,_pmSrc=null;
+function playerMap(){
+  if(_pmSrc!==players){_pm=new Map(players.map(p=>[norm(p.name),p]));_pmSrc=players}
+  return _pm;
+}
+/* Nombre de jugador clickeable (abre su ventana). Si no está en la hoja Jugadores, queda como texto */
+function playerCell(name,withFlag){
+  if(!clean(name))return "—";
+  const p=playerMap().get(norm(name));
+  if(!p)return `<div class="player-name"><span>${esc(name)}</span></div>`;
+  return `<div class="player-name">${withFlag?flagHtml(p.country):""}<span class="clickable" data-player="${esc(p.name)}" tabindex="0" role="button">${esc(p.name)}</span></div>`;
+}
+/* Nombre de nivel clickeable (abre su ventana) */
+function levelLink(name){
+  if(!clean(name))return "—";
+  return `<span class="clickable" data-level="${esc(name)}" tabindex="0" role="button">${esc(name)}</span>`;
+}
+
+/* ---------- Render: ranking de niveles ---------- */
+function externalRankText(l){
+  if(l.externalRank)return "Puesto externo #"+l.externalRank;
+  const st=externalState[difficultyOrder(l.difficulty)];
+  if(st==="loading")return "Buscando puesto externo...";
+  if(st==="error")return "Puesto externo no disponible";
+  return "Sin puesto externo";
+}
+function renderLevels(){
+  const all=sortedLevels();
+  const q=norm($("search").value);
+  const filter=$("difficultyFilter").value;
+  const filtered=all.filter(l=>
+    norm(l.name).includes(q)&&
+    (filter===""||difficultyOrder(l.difficulty)===Number(filter))
+  );
+  $("totalLevels").textContent=levels.length;
+  $("totalPlayers").textContent=players.length;
+  $("topScore").textContent=all.length?levelScore(all[0],1).toFixed(2):"—";
+
+  if(!filtered.length){
+    $("levelsBody").innerHTML='<tr><td colspan="5" class="muted">No hay niveles que coincidan con la búsqueda.</td></tr>';
+    return;
+  }
+  $("levelsBody").innerHTML=filtered.map(l=>{
+    const rank=all.findIndex(x=>x===l)+1;
+    return `<tr data-level="${esc(l.name)}" tabindex="0" role="button" title="Ver información de ${esc(l.name)}">
+      <td class="rank ${rank===1?"first":""}">#${rank}</td>
+      <td><div class="level-cell">${thumbHtml(l)}<div>
+        <div class="level-name">${esc(l.name)}</div>
+        ${l.id?`<div class="sub">ID ${esc(l.id)}</div>`:""}
+      </div></div></td>
+      <td>${difficultyBadge(l.difficulty)}</td>
+      <td>${esc(l.list)}<div class="sub">${externalRankText(l)}</div></td>
+      <td class="points">${levelScore(l,rank).toFixed(2)}</td>
+    </tr>`;
+  }).join("");
+}
+
+/* ---------- Render: jugadores ---------- */
+function renderPlayers(){
+  const ranking=calculatePlayerScores();
+  const q=norm($("playerSearch").value);
+  const filtered=ranking.filter(p=>norm(p.name+" "+p.country).includes(q));
+  $("playerCount").textContent=ranking.length;
+  $("playerLeader").textContent=ranking[0]?.name||"—";
+  $("playerLeaderPoints").textContent=(ranking[0]?.points||0).toFixed(2);
+
+  $("playersBody").innerHTML=filtered.length?filtered.map(p=>{
+    const rank=ranking.findIndex(x=>x.name===p.name)+1;
+    return `<tr data-player="${esc(p.name)}" tabindex="0" role="button" title="Ver perfil de ${esc(p.name)}">
+      <td class="rank ${rank===1?"first":""}">#${rank}</td>
+      <td><div class="player-name">${flagHtml(p.country)}<span>${esc(p.name)}</span></div></td>
+      <td>${p.completed}</td>
+      <td class="player-points">${p.points.toFixed(2)}</td>
+    </tr>`;
+  }).join(""):'<tr><td colspan="4" class="muted">No hay jugadores registrados.</td></tr>';
+}
+
+/* ---------- Ventanas: pila de navegación ---------- */
+let modalStack=[];
+
+function modalHtmlFor(item){
+  return item.type==="player"?playerModalHtml(item.key):levelModalHtml(item.key);
+}
+function paintModal(html){
+  const back=modalStack.length>1?'<button class="modal-back" data-back>← Volver</button>':"";
+  $("modalCard").innerHTML=`<button class="modal-close" data-close aria-label="Cerrar">✕</button>${back}${html}`;
+  const modal=$("playerModal");
+  modal.classList.remove("hidden");
+  modal.scrollTop=0;
+  document.body.classList.add("modal-open");
+}
+function openModal(type,key){
+  const item={type,key};
+  const html=modalHtmlFor(item);
+  if(!html)return;
+  if($("playerModal").classList.contains("hidden"))modalStack=[];
+  modalStack.push(item);
+  paintModal(html);
+}
+function backModal(){
+  modalStack.pop();
+  const item=modalStack[modalStack.length-1];
+  const html=item?modalHtmlFor(item):null;
+  if(!html){closeModal();return}
+  paintModal(html);
+}
+function closeModal(){
+  modalStack=[];
+  $("playerModal").classList.add("hidden");
+  document.body.classList.remove("modal-open");
+}
+
+/* ---------- Ventana de jugador ---------- */
+function completedRow(e){
+  const info=e.info,l=info.level;
+  return `<div class="plevel">
+    <div class="prank">#${info.rank}</div>
+    ${thumbHtml(l,"sm")}
+    <div class="pinfo">
+      <div class="level-name">${levelLink(l.name)}</div>
+      ${difficultyBadge(l.difficulty)}
+    </div>
+    <div class="pside points">${info.points.toFixed(2)}</div>
+  </div>`;
+}
+function progressRow(e){
+  const info=e.info,l=info?info.level:null;
+  const diff=recordDifficulty(e.record,info);
+  const badge=diff?difficultyBadge(diff):'<div class="sub">Fuera de la lista</div>';
+  return `<div class="plevel">
+    <div class="prank">${info?"#"+info.rank:"—"}</div>
+    ${thumbHtml(thumbSource(info,e.name),"sm")}
+    <div class="pinfo">
+      <div class="level-name">${levelLink(l?l.name:e.name)}</div>
+      ${badge}
+    </div>
+    <div class="pside"><div class="pct">${esc(e.record.progress||"—")}</div><div class="bar"><i style="width:${progressPct(e.record)}%"></i></div></div>
+  </div>`;
+}
+function playerModalHtml(name){
+  const ranking=calculatePlayerScores();
+  const pos=ranking.findIndex(p=>norm(p.name)===norm(name));
+  if(pos<0)return null;
+  const p=ranking[pos];
+  const {done,prog}=playerEntries(p.name);
+  const hardest=done[0];
+
+  const hardestHtml=hardest
+    ?`<div class="hardest">
+        ${thumbHtml(hardest.info.level,"xl")}
+        <div class="hardest-info">
+          <div class="hardest-name">${levelLink(hardest.info.level.name)}</div>
+          ${difficultyBadge(hardest.info.level.difficulty)}
+          <div class="sub">#${hardest.info.rank} en la lista · ${hardest.info.points.toFixed(2)} puntos</div>
+        </div>
+      </div>`
+    :'<div class="sub" style="margin-top:12px">Todavía no completó ningún nivel de la lista.</div>';
+
+  const progHtml=prog.length
+    ?`<div class="progress-box">
+        <h3 class="group-title">En progreso <small>${prog.length} ${prog.length===1?"nivel":"niveles"}</small></h3>
+        <div class="plist">${prog.map(progressRow).join("")}</div>
+      </div>`
+    :"";
+
+  const doneHtml=done.length
+    ?`<div class="plist">${done.map(completedRow).join("")}</div>`
+    :'<div class="notice" style="margin:0">Sin niveles completados todavía.</div>';
+
+  return `
+    <div class="player-name modal-title">${flagHtml(p.country)}<span>${esc(p.name)}</span></div>
+    <div class="modal-sub">Puesto #${pos+1} en el ranking de jugadores</div>
+    <div class="stats two">
+      <div class="stat"><strong class="player-points">${p.points.toFixed(2)}</strong><small>Puntos</small></div>
+      <div class="stat"><strong>${p.completed}</strong><small>Niveles pasados</small></div>
+    </div>
+    <div class="hardest-wrap">
+      <div class="eyebrow">HARDEST</div>
+      ${hardestHtml}
+    </div>
+    <div class="group">
+      ${progHtml}
+      <h3 class="group-title">Niveles pasados</h3>
+      ${doneHtml}
+    </div>`;
+}
+
+/* ---------- Ventana de nivel ---------- */
+function top1BlockHtml(info,key){
+  if(!info)return "";
+  const reign=computeReigns().get(key);
+  const today=startOfToday();
+  let main="",sub="";
+  if(info.rank===1){
+    if(reign){
+      main=`Es el Top 1 desde el ${fmtDate(reign.start)}`;
+      sub=`Lleva ${fmtDuration(today-reign.start)} en lo más alto.`;
+    }else{
+      main="Es el Top 1 de la lista";
+      sub="Todavía no hay una fecha de completado registrada para calcular desde cuándo.";
+    }
+  }else if(reign){
+    if(reign.end!=null){
+      main="Fue Top 1";
+      sub=`Del ${fmtDate(reign.start)} al ${fmtDate(reign.end)} · duró ${fmtDuration(reign.end-reign.start)}.`;
+    }else{
+      main="Es el nivel más difícil completado hasta ahora";
+      sub=`Desde el ${fmtDate(reign.start)} · ${fmtDuration(today-reign.start)}.`;
+    }
+  }else return "";
+  return `<div class="top1-box">
+    <div class="top1-label">TOP 1</div>
+    <div class="top1-main">${esc(main)}</div>
+    <div class="sub">${esc(sub)}</div>
+  </div>`;
+}
+function levelModalHtml(name){
+  const key=norm(name);
+  if(!key)return null;
+  const info=levelIndex().get(key)||null;
+  const recs=records.filter(r=>r.player&&norm(r.level)===key);
+  if(!info&&!recs.length)return null;
+
+  const title=info?info.level.name:(recs[0].level||name);
+  const diff=info?info.level.difficulty:(recs.map(r=>r.levelDiff).find(Boolean)||"");
+  const src=thumbSource(info,title);
+
+  const victors=new Map(),tries=new Map();
+  recs.forEach(r=>{
+    const pk=norm(r.player);
+    if(isCompleted(r)){
+      const cur=victors.get(pk);
+      if(!cur)victors.set(pk,{name:r.player,ts:r.ts,date:r.date});
+      else if(r.ts!=null&&(cur.ts==null||r.ts<cur.ts)){cur.ts=r.ts;cur.date=r.date}
+    }else{
+      const cur=tries.get(pk);
+      if(!cur||progressNumber(r.progress)>progressNumber(cur.progress))tries.set(pk,r);
+    }
+  });
+  const victorList=[...victors.values()].sort((a,b)=>(a.ts??1e18)-(b.ts??1e18));
+  const tryList=[...tries.entries()].filter(([pk])=>!victors.has(pk)).map(([,r])=>r)
+    .sort((a,b)=>progressNumber(b.progress)-progressNumber(a.progress));
+
+  const victorsHtml=victorList.length
+    ?`<div class="plist">${victorList.map((v,i)=>`<div class="plevel">
+        <div class="prank">${i+1}º</div>
+        <div class="pinfo">${playerCell(v.name,true)}</div>
+        <div class="pside date">${v.ts!=null?fmtDate(v.ts):esc(v.date||"Sin fecha")}</div>
+      </div>`).join("")}</div>`
+    :'<div class="notice" style="margin:0">Nadie lo pasó todavía.</div>';
+
+  const triesHtml=tryList.length
+    ?`<div class="plist">${tryList.map(r=>`<div class="plevel">
+        <div class="pinfo">${playerCell(r.player,true)}</div>
+        <div class="pside"><div class="pct">${esc(r.progress||"—")}</div><div class="bar"><i style="width:${progressPct(r)}%"></i></div></div>
+      </div>`).join("")}</div>`
+    :'<div class="notice" style="margin:0">Nadie tiene progreso registrado.</div>';
+
+  const statsHtml=info?`
+    <div class="stats two">
+      <div class="stat"><strong>#${info.rank}</strong><small>Puesto en la tabla</small></div>
+      <div class="stat"><strong class="player-points">${info.points.toFixed(2)}</strong><small>Puntos que da</small></div>
+    </div>`:"";
+
+  const metaHtml=info
+    ?`<div class="sub"><a href="${esc(linkForLevel(info.level))}" target="_blank" rel="noopener">Ver nivel ↗</a>${info.level.id?" · ID "+esc(info.level.id):""}</div>`
+    :'<div class="sub">Fuera del Top 100</div>';
+
+  return `
+    <div class="level-head">
+      ${(info||safeImage(src.thumbnail))?thumbHtml(src,"xl"):""}
+      <div class="hardest-info">
+        <div class="hardest-name">${esc(title)}</div>
+        ${diff?difficultyBadge(diff):""}
+        ${metaHtml}
+      </div>
+    </div>
+    ${statsHtml}
+    ${top1BlockHtml(info,key)}
+    <div class="group">
+      <h3 class="group-title">Jugadores que lo pasaron <small>${victorList.length}</small></h3>
+      ${victorsHtml}
+    </div>
+    <div class="group">
+      <h3 class="group-title">En progreso de pasárselo <small>${tryList.length}</small></h3>
+      ${triesHtml}
+    </div>`;
+}
+
+/* ---------- Render: progresos ---------- */
+function renderProgressList(){
+  const q=norm($("recordSearch").value);
+  const ranking=calculatePlayerScores();
+  const playerPos=new Map(ranking.map((p,i)=>[norm(p.name),i+1]));
+  const idx=levelIndex();
+
+  const best=new Map(),done=new Set();
+  records.forEach(r=>{
+    if(!r.player||!r.level)return;
+    const key=norm(r.player)+"|"+norm(r.level);
+    if(isCompleted(r)){done.add(key);return}
+    const cur=best.get(key);
+    if(!cur||progressNumber(r.progress)>progressNumber(cur.progress))best.set(key,r);
+  });
+
+  /* Orden: según la posición del jugador en el ranking de jugadores */
+  const rows=[...best.entries()].filter(([key])=>!done.has(key)).map(([,r])=>({
+    record:r,
+    pos:playerPos.get(norm(r.player))||99999,
+    info:idx.get(norm(r.level))||null
+  })).filter(e=>norm(e.record.player+" "+e.record.level).includes(q));
+
+  rows.sort((a,b)=>{
+    if(a.pos!==b.pos)return a.pos-b.pos;
+    const ar=a.info?a.info.rank:99999,br=b.info?b.info.rank:99999;
+    if(ar!==br)return ar-br;
+    return a.record.level.localeCompare(b.record.level);
+  });
+
+  $("progressBody").innerHTML=rows.length?rows.map(e=>{
+    const r=e.record;
+    const levelName=e.info?e.info.level.name:r.level;
+    return `<tr>
+      <td>${playerCell(r.player,true)}</td>
+      <td><div class="name-line level-name" style="font-size:14px">${diffIconHtml(recordDifficulty(r,e.info))}${levelLink(levelName)}</div><div class="sub">${e.info?"#"+e.info.rank+" en la lista":"Fuera de la lista"}</div></td>
+      <td>${progressCell(r)}</td>
+    </tr>`;
+  }).join(""):'<tr><td colspan="3" class="muted">No hay niveles en progreso.</td></tr>';
+}
+
+function renderRecords(){
+  const q=norm($("recordSearch").value);
+  const idx=levelIndex();
+  /* Solo completados; se invierte el orden de la hoja: lo último agregado aparece arriba */
+  const filtered=[...records].reverse().filter(r=>isCompleted(r)&&norm(r.player+" "+r.level+" "+r.type).includes(q));
+  $("recordsBody").innerHTML=filtered.length?filtered.map(r=>{
+    const info=idx.get(norm(r.level))||null;
+    const levelName=info?info.level.name:r.level;
+    return `<tr>
+      <td>${playerCell(r.player,false)}</td>
+      <td><div class="level-cell md">${thumbHtml(thumbSource(info,r.level),"md")}<div class="name-line level-name" style="font-size:14px">${diffIconHtml(recordDifficulty(r,info))}${levelLink(levelName)}</div></div></td>
+      <td>${esc(dateText(r))}</td>
+      <td>${esc(r.progress||"—")}</td>
+      <td><span class="success">Completado</span>${info?' · Suma puntos':''}</td>
+    </tr>`;
+  }).join(""):'<tr><td colspan="5" class="muted">No hay registros completados.</td></tr>';
+}
+function renderRecordsPage(){renderProgressList();renderRecords()}
+
+/* ---------- BondioRoullete ----------
+   Pool = los niveles del Top 100 de la lista. Cada tirada elige un nivel que no se haya usado antes.
+   El estado (niveles completados + nivel actual) se guarda en localStorage de este navegador. */
+const ROUL_KEY="bondioroullete_v1";
+let roul={done:[],current:null,over:false};
+let roulSpinning=false;
+function roulLoad(){
+  try{
+    const s=JSON.parse(localStorage.getItem(ROUL_KEY)||"null");
+    if(s&&Array.isArray(s.done))roul={
+      done:s.done.filter(x=>typeof x==="string"),
+      current:typeof s.current==="string"?s.current:null,
+      over:!!s.over
+    };
+  }catch(_){}
+}
+function roulSave(){try{localStorage.setItem(ROUL_KEY,JSON.stringify(roul))}catch(_){}}
+function randInt(n){
+  if(window.crypto&&crypto.getRandomValues){const a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]%n}
+  return Math.floor(Math.random()*n);
+}
+function reelHtml(l){
+  return `<div class="roul-level">${thumbHtml(l,"xl")}<div class="level-name">${esc(l.name)}</div></div>`;
+}
+function roulSpin(){
+  if(roulSpinning||roul.current||roul.over)return;
+  const pool=sortedLevels();
+  const used=new Set(roul.done.map(norm));
+  const avail=pool.filter(l=>!used.has(norm(l.name)));
+  if(!avail.length)return;
+  const pick=avail[randInt(avail.length)];
+  roul.current=pick.name;
+  roulSave();
+  roulSpinning=true;
+  renderRoulette();
+  const steps=26;let i=0;
+  const tick=()=>{
+    const box=$("reelBox");
+    if(i>=steps||!box){roulSpinning=false;renderRoulette(true);return}
+    box.innerHTML=reelHtml(pool[randInt(pool.length)]);
+    i++;
+    setTimeout(tick,40+i*i*0.35);
+  };
+  tick();
+}
+function roulComplete(){
+  if(!roul.current||roulSpinning)return;
+  roul.done.push(roul.current);
+  roul.current=null;
+  roulSave();
+  renderRoulette();
+}
+function roulGiveUp(){
+  if(roulSpinning||!roul.current)return;
+  if(!confirm("¿Seguro que querés rendirte? La ruleta termina en "+roul.done.length+"%."))return;
+  roul.over=true;
+  roul.current=null;
+  roulSave();
+  renderRoulette();
+}
+function roulReset(){
+  if(roulSpinning)return;
+  if((roul.done.length||roul.current)&&!roul.over&&!confirm("¿Empezar una ruleta nueva? Se pierde el progreso actual."))return;
+  roul={done:[],current:null,over:false};
+  roulSave();
+  renderRoulette();
+}
+function renderRoulette(reveal){
+  const panel=$("roulettePanel");
+  if(!panel)return;
+  const pool=sortedLevels();
+  if(!pool.length){panel.innerHTML='<div class="notice">Cargando niveles...</div>';return}
+  const total=Math.min(100,pool.length);
+  const idx=levelIndex();
+  const doneN=roul.done.length;
+  const target=doneN+1;
+  const finished=doneN>=total;
+  const used=new Set(roul.done.map(norm));
+  const remaining=pool.filter(l=>!used.has(norm(l.name))).length;
+  $("roulPct").textContent=doneN+"%";
+  $("roulNext").textContent=(finished||roul.over)?"—":target+"%";
+  $("roulLeft").textContent=remaining;
+
+  let main="";
+  if(roul.over){
+    main=`<div class="roul-card">
+      <div class="eyebrow">RULETA TERMINADA</div>
+      <div class="roul-target">${doneN}%</div>
+      <p class="muted roul-hint">Llegaste hasta el ${doneN}%. ¡Probá de nuevo!</p>
+      <div class="roul-actions"><button class="btn primary big" data-roul="reset">Nueva ruleta</button></div>
+    </div>`;
+  }else if(finished){
+    main=`<div class="roul-card roul-win">
+      <div class="eyebrow">¡COMPLETADA!</div>
+      <div class="roul-target">${total}%</div>
+      <p class="muted roul-hint">Completaste la BondioRoullete. ¡Felicitaciones!</p>
+      <div class="roul-actions"><button class="btn primary big" data-roul="reset">Nueva ruleta</button></div>
+    </div>`;
+  }else if(roulSpinning){
+    const first=pool[randInt(pool.length)];
+    main=`<div class="roul-card spinning">
+      <div class="eyebrow">GIRANDO...</div>
+      <div class="roul-target">${target}%</div>
+      <div id="reelBox">${reelHtml(first)}</div>
+    </div>`;
+  }else if(roul.current){
+    const info=idx.get(norm(roul.current));
+    const l=info?info.level:{name:roul.current,thumbnail:"",difficulty:""};
+    main=`<div class="roul-card${reveal===true?" reveal":""}">
+      <div class="eyebrow">TU NIVEL</div>
+      <div class="roul-target">${target}%</div>
+      <div class="muted roul-hint">Tenés que pasar el ${target}% (o más) en:</div>
+      <div class="roul-level">
+        ${thumbHtml(l,"xl")}
+        <div class="level-name">${levelLink(l.name)}</div>
+        ${l.difficulty?difficultyBadge(l.difficulty):""}
+        ${info?`<div class="sub">#${info.rank} en la lista · <a href="${esc(linkForLevel(l))}" target="_blank" rel="noopener">Ver nivel ↗</a></div>`:""}
+      </div>
+      <div class="roul-actions">
+        <button class="btn success big" data-roul="complete">✓ Completé el ${target}%</button>
+        <button class="btn" data-roul="giveup">Rendirme</button>
+      </div>
+    </div>`;
+  }else{
+    main=`<div class="roul-card">
+      <div class="eyebrow">PRÓXIMO OBJETIVO</div>
+      <div class="roul-target">${target}%</div>
+      <p class="muted roul-hint">Tirá la ruleta para saber en qué nivel tenés que hacer el ${target}%.</p>
+      <div class="roul-actions"><button class="btn primary big" data-roul="spin">🎲 Tirar ruleta</button></div>
+    </div>`;
+  }
+
+  const bar=`<div class="bar roul-bar"><i style="width:${Math.min(100,doneN/total*100)}%"></i></div>`;
+
+  const hist=doneN
+    ?`<div class="group">
+        <h3 class="group-title">Historial <small>${doneN} ${doneN===1?"nivel":"niveles"}</small></h3>
+        <div class="plist">${roul.done.map((name,i)=>({name,pct:i+1})).reverse().map(e=>{
+          const info=idx.get(norm(e.name));
+          const l=info?info.level:null;
+          return `<div class="plevel">
+            <div class="prank" style="width:52px;color:var(--gold)">${e.pct}%</div>
+            ${thumbHtml(l,"sm")}
+            <div class="pinfo">
+              <div class="level-name">${levelLink(l?l.name:e.name)}</div>
+              ${l&&l.difficulty?difficultyBadge(l.difficulty):""}
+            </div>
+            <div class="pside sub">${info?"#"+info.rank+" en la lista":""}</div>
+          </div>`;
+        }).join("")}</div>
+      </div>`
+    :"";
+
+  const foot=(doneN||roul.current)&&!roul.over&&!finished&&!roulSpinning
+    ?'<div class="roul-foot"><button class="btn" data-roul="reset">Reiniciar ruleta</button></div>':"";
+
+  panel.innerHTML=bar+main+foot+hist;
+}
+document.addEventListener("click",e=>{
+  const b=e.target.closest("[data-roul]");
+  if(!b)return;
+  const a=b.getAttribute("data-roul");
+  if(a==="spin")roulSpin();
+  else if(a==="complete")roulComplete();
+  else if(a==="giveup")roulGiveUp();
+  else if(a==="reset")roulReset();
+});
+
+function renderAll(){renderLevels();renderPlayers();renderRecordsPage();if(!roulSpinning)renderRoulette()}
+
+async function loadSheets(){
+  $("connection").textContent="";
+  $("connection").className="";
+  $("levelStatus").textContent="";
+  const results=await Promise.allSettled([
+    readSheet(SHEETS.levels),readSheet(SHEETS.players),readSheet(SHEETS.records),readSheet(SHEETS.config)
+  ]);
+  const errors=[];
+  if(results[0].status==="fulfilled")levels=results[0].value.map(normalizeLevel).filter(Boolean);
+  else errors.push("Niveles: "+results[0].reason.message);
+  if(results[1].status==="fulfilled")players=results[1].value.map(normalizePlayer).filter(p=>p.name);
+  else errors.push("Jugadores: "+results[1].reason.message);
+  if(results[2].status==="fulfilled")records=results[2].value.map(normalizeRecord).filter(r=>r.player||r.level);
+  else errors.push("Progresos: "+results[2].reason.message);
+  /* Config es opcional: si falla o no existe, se usa el logo de texto y el favicon por defecto */
+  config=results[3].status==="fulfilled"?parseConfig(results[3].value):{};
+  applyConfig();
+
+  if(errors.length){
+    $("connection").textContent="Conexión parcial";
+    $("connection").className="error";
+    $("levelStatus").innerHTML='<span class="error">Problemas de conexión:</span><br>'+errors.map(esc).join("<br>");
+  }
+  renderAll();
+  loadExternalRanks();
+}
+
+document.querySelectorAll("nav button").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    document.querySelectorAll("main>section").forEach(s=>s.classList.add("hidden"));
+    $("page-"+btn.dataset.page).classList.remove("hidden");
+  });
+});
+$("search").addEventListener("input",renderLevels);
+$("difficultyFilter").addEventListener("change",renderLevels);
+$("playerSearch").addEventListener("input",renderPlayers);
+$("recordSearch").addEventListener("input",renderRecordsPage);
+
+/* Click en cualquier jugador (data-player) o nivel (data-level), en cualquier sección o dentro de las ventanas */
+function activate(el){
+  if(el.hasAttribute("data-player"))openModal("player",el.getAttribute("data-player"));
+  else openModal("level",el.getAttribute("data-level"));
+}
+document.addEventListener("click",e=>{
+  if(e.target===$("playerModal")||e.target.closest("[data-close]")){closeModal();return}
+  if(e.target.closest("[data-back]")){backModal();return}
+  const el=e.target.closest("[data-player],[data-level]");
+  if(el)activate(el);
+});
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"){closeModal();return}
+  if(e.key!=="Enter"&&e.key!==" ")return;
+  if(e.target.matches&&e.target.matches("input,select,textarea,button"))return;
+  const el=e.target.closest&&e.target.closest("[data-player],[data-level]");
+  if(el){e.preventDefault();activate(el)}
+});
+
+roulLoad();
+renderRoulette();
+loadSheets();
+</script>
+</body>
+</html>
